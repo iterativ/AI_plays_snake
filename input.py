@@ -3,6 +3,7 @@ width = 540
 height = 440
 block_length = 20
 brainLayer = [24, 16, 3]  # neural network layers that act as brain of snake
+scoring = 'length'  # possible values: 'length', 'steps'
 
 # genetic algorithm parameter
 population_size = 50

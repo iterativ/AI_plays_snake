@@ -33,6 +33,11 @@ To train the neural network using Genetic Algorithm, alter the parameters accord
 ```
 python3 Genetic_algo.py --output saved/test.pickle 
 ```
+### Scoring
+Default scoring is based on the length of the snake. To change the scoring to also consider the steps taken since the last cherry, change the parameter `scoring` to `'steps'` in `input.py`
+```
+scoring = 'steps'
+```
 ## Playing
 To run or test the snakes saved previously, run the following commands specifying the path to the saved file :
 ```

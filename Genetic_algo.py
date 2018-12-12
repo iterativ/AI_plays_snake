@@ -5,7 +5,7 @@ import pickle
 from Arena import Arena
 import argparse
 from input import block_length, population_size, per_of_best_old_pop, per_of_worst_old_pop, width, height, brainLayer, \
-    mutation_percent, mutation_intensity, no_of_generations
+    mutation_percent, mutation_intensity, no_of_generations, scoring
 import time
 
 
@@ -54,7 +54,10 @@ def run(snakes, arena):
                 snakes_killed += 1
             # if food eaten by snake
             if (s.head_x, s.head_y) == arena.food:
-                s.score += ((max_steps - s.steps_taken) / max_steps)
+                if scoring == 'steps':
+                    s.score += ((max_steps - s.steps_taken) / max_steps)
+                else:
+                    s.score += 1
                 s.steps_taken = 0
                 result = s.Brain.decision_from_nn(s.head_x, s.head_y, s.list, s.direction)
                 if not s.increaseSize(result):
