@@ -4,15 +4,16 @@ import numpy as np
 import pickle
 from Arena import Arena
 import argparse
-from input import *
+from input import block_length, population_size, per_of_best_old_pop, per_of_worst_old_pop, width, height, brainLayer, \
+    mutation_percent, mutation_intensity, no_of_generations
 import time
 
 
 # used to show the progress bar
 def progress_bar(curr, total, length):
-    frac = curr/total
-    filled_bar = round(frac*length)
-    print('\r', '#'*filled_bar + '-'*(length - filled_bar), '[{:>7.2%}]'.format(frac), end='')
+    frac = curr / total
+    filled_bar = round(frac * length)
+    print('\r', '#' * filled_bar + '-' * (length - filled_bar), '[{:>7.2%}]'.format(frac), end='')
 
 
 # to run all the snakes of a population
@@ -20,6 +21,7 @@ def run(snakes, arena):
     i = 1
     count = [0 for _ in range(300)]
     snakes_killed = 0
+    max_steps = width * height / block_length ** 2
     # making new seed for each generation so that fittest of one generation may not be fittest in another
     # and we get a global optimum
     env_seed = random.random()
@@ -29,6 +31,7 @@ def run(snakes, arena):
         progress_bar(i, population_size, 30)
         random.seed(env_seed)  # so that each snake of the population faces the same environment
         s.Brain.setNextFood(arena.newFood(s.list))
+        times = 0
         while s.isAlive():
             result = s.Brain.decision_from_nn(s.head_x, s.head_y, s.list, s.direction)
             # to check if continuous loop formed by snake and then killing that snake
@@ -36,7 +39,6 @@ def run(snakes, arena):
                 if not checkloop:
                     checkloop = True
                     any_point_of_loop = (s.head_x, s.head_y)
-                    times = 0
                 elif (s.head_x, s.head_y) == any_point_of_loop:
                     times += 1
                 if times > 2:
@@ -52,6 +54,7 @@ def run(snakes, arena):
                 snakes_killed += 1
             # if food eaten by snake
             if (s.head_x, s.head_y) == arena.food:
+                s.score += ((max_steps - s.steps_taken) / max_steps)
                 s.steps_taken = 0
                 result = s.Brain.decision_from_nn(s.head_x, s.head_y, s.list, s.direction)
                 if not s.increaseSize(result):
@@ -72,8 +75,7 @@ def print_top_5(five_snakes):
     i = 0
     for snake in five_snakes:
         i += 1
-        print('snake : ', i, ', score : ', len(snake.list) -
-              1, ', steps : ', snake.steps_taken, end='\t')
+        print('snake : ', i, ', score : ', snake.score, ', steps : ', snake.steps_taken, end='\t')
         if snake.crash_body and snake.crash_wall:
             print('crashed repetition')
         elif snake.crash_wall and not snake.crash_body:
@@ -83,7 +85,7 @@ def print_top_5(five_snakes):
 
 
 # to save the snake
-def save_top_snakes(snakes,  filename):
+def save_top_snakes(snakes, filename):
     f = open(filename, 'wb')
     pickle.dump(snakes, f)
     f.close()
@@ -121,9 +123,9 @@ def create_new_population(snakes):
 def mutate_children(children):
     for child in children:
         for weight in child.Brain.weights:
-            for ele in range(int(weight.shape[0]*weight.shape[1]*mutation_percent/100)):
-                row = random.randint(0, weight.shape[0]-1)
-                col = random.randint(0, weight.shape[1]-1)
+            for ele in range(int(weight.shape[0] * weight.shape[1] * mutation_percent / 100)):
+                row = random.randint(0, weight.shape[0] - 1)
+                col = random.randint(0, weight.shape[1] - 1)
                 weight[row, col] += random.uniform(-mutation_intensity, mutation_intensity)
     return children
 
@@ -157,10 +159,10 @@ def main():
     arena = Arena(width, height, block_length)
     top_snakes = []
     for i in range(no_of_generations):
-        print('generation : ', i+1, ',', end='\n')
+        print('generation : ', i + 1, ',', end='\n')
         run(snakes, arena)
         # sorting the population wrt length of snake and steps taken
-        snakes.sort(key=lambda x: (len(x.list), -x.steps_taken), reverse=True)
+        snakes.sort(key=lambda x: (x.score, -x.steps_taken), reverse=True)
         print_top_5(snakes[0:5])
         # generalising the whole population
         print('saving the snake')

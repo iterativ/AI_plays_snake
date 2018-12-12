@@ -13,6 +13,7 @@ class snake:
         self.crash_wall = False
         self.crash_body = False
         self.block = size
+        self.score = 0
         self.Brain = brain(brainLayer, self.width, self.height,
                            self.block, random_weights, random_bases)
         if random_start:
