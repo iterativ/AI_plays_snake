@@ -71,7 +71,7 @@ class brain:
             x, y = x + dirx, y + diry
             distance += 1
             if(not food_found and fx == x and fy == y):
-                input[0] = 1
+                input[0] = 1 / distance
                 food_found = True
             if(not body_found and self.isBody(x, y, snake)):
                 input[1] = 1 / distance
